@@ -4,7 +4,7 @@ import { useState } from "react";
 import ModalNotification from "../../components/Modal/ModalNotification";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../store/store";
-import { changePassword } from "../../slices/authSlice";
+import { changePassword, verifyChangePassword } from "../../slices/authSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -58,17 +58,13 @@ const PasswordInput = ({
   );
 };
 
-const ChangePasswordPage = () => {
+const ReconfirmPassword = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-  const { loading, accessToken } = useSelector(
-    (state: RootState) => state.auth
-  );
 
   const handleOpen = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,51 +74,28 @@ const ChangePasswordPage = () => {
   const handleClose = () => setModalOpen(false);
 
   const handleSubmit = async () => {
-    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
     if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+      toast.error("Mật khẩu mới và xác nhận mật khẩu không khớp!");
       return;
     }
-
-    // Kiểm tra token
-    if (!accessToken) {
-      toast.error("Không tìm thấy token. Vui lòng đăng nhập lại.");
-      return;
-    }
-
-    // Chuẩn bị dữ liệu gửi đến API
-    const requestBody = {
-      OldPassWord: oldPassword,
-      NewPassWord: newPassword,
-      ConfirmPassWord: confirmPassword,
-    };
 
     try {
-      // Gửi yêu cầu đổi mật khẩu
-      const resultAction = await dispatch(changePassword(requestBody));
-
-      // Kiểm tra kết quả
-      if (changePassword.fulfilled.match(resultAction)) {
-        const response = resultAction.payload as any; // Đảm bảo payload chứa phản hồi từ API
-        toast(response.message || "Đổi mật khẩu thành công!");
-        navigate("/profiles");
-      } else {
-        const errorResponse = resultAction.payload as any; // Đảm bảo payload chứa lỗi từ API
-        toast.error(
-          errorResponse.message || "Đổi mật khẩu thất bại. Vui lòng thử lại."
-        );
-      }
-    } catch (error) {
-      console.error("Change password error:", error);
-      toast.error("Đổi mật khẩu thất bại. Vui lòng thử lại.");
+      await dispatch(
+        verifyChangePassword({
+          code: oldPassword,
+          password: newPassword,
+          confirmPassword: confirmPassword,
+        })
+      ).unwrap();
+      setModalOpen(false);
+    } catch (error: any) {
+      console.error("Error changing password:", error);
     }
-
-    setModalOpen(false);
   };
 
   return (
     <div className="w-full h-screen max-w-md mx-auto bg-white">
-      <HeaderDetailPage titlePage="Đổi mật khẩu" />
+      <HeaderDetailPage titlePage="Đổi mật khẩu mới" />
       <div className="flex flex-col items-center gap-4 h-screen pt-[150px] pb-5 px-5">
         <form
           method="POST"
@@ -132,8 +105,8 @@ const ChangePasswordPage = () => {
           <PasswordInput
             id="oldPassword"
             name="oldPassword"
-            placeholder="Mật khẩu cũ"
-            label="Mật khẩu cũ"
+            placeholder="Nhập code"
+            label="Code"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
           />
@@ -156,12 +129,11 @@ const ChangePasswordPage = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full my-2">
             <button
               type="submit"
               className="w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
               onClick={handleOpen}
-              disabled={loading}
             >
               Đồng ý
             </button>
@@ -173,14 +145,14 @@ const ChangePasswordPage = () => {
         <ModalNotification
           isOpen={isModalOpen}
           onClose={handleClose}
-          title="Xác nhận đổi mật khẩu?"
-          message="Bạn xác nhận đổi mật khẩu hiện tại, bạn cần đăng xuất và đăng nhập tài khoản với mật khẩu mới"
+          title="Xác nhận mật khẩu mới"
+          message="Đăng nhập tài khoản với mật khẩu mới"
           confirmText="Đồng ý"
-          onConfirm={handleSubmit} // Add onConfirm handler
+          onConfirm={handleSubmit}
         />
       )}
     </div>
   );
 };
 
-export default ChangePasswordPage;
+export default ReconfirmPassword;

@@ -1,28 +1,74 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Img from "../../assets/img";
 import HeaderPage from "../../components/HeaderPage";
 import ModalNotification from "../../components/Modal/ModalNotification";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchProfile, logout } from "../../slices/authSlice"; // Import logout action
+import { useDispatch, useSelector } from "../../store/store";
+import { toast } from "react-toastify";
+import { configURL } from "../../services/configAPI";
 
 const ProfilePage = () => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<"logout" | "login">("login"); // Xác định loại modal
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleOpen = (e: React.FormEvent) => {
-    e.preventDefault();
-    setModalOpen(true);
+  // Lấy trạng thái đăng nhập từ Redux store
+  const { accessToken, user } = useSelector((state: any) => state.auth);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setModalType("login");
+      setModalOpen(true);
+    } else {
+      dispatch(fetchProfile())
+        .unwrap()
+        .catch((error) => {
+          toast.error("Không thể tải thông tin người dùng!");
+          console.error("Fetch profile failed:", error);
+        });
+    }
+  }, [accessToken, dispatch]);
+
+  const handleClose = () => setModalOpen(false); // Đóng ModalNotification
+
+  const handleConfirm = async () => {
+    if (modalType === "login") {
+      navigate("/login"); 
+    } else if (modalType === "logout") {
+      try {
+        await dispatch(logout()).unwrap(); 
+        toast.success("Đăng xuất thành công!");
+        navigate("/login"); 
+      } catch (error) {
+        toast.error("Đăng xuất thất bại!");
+        console.error("Logout failed:", error);
+      }
+    }
+    setModalOpen(false); // Đóng ModalNotification
   };
 
-  const handleClose = () => setModalOpen(false);
+  console.log("profile:", user);
+
+  const handleOpenLogout = () => {
+    setModalType("logout"); // Đặt modal thành loại "logout"
+    setModalOpen(true); // Hiển thị ModalNotification
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-white w-full h-screen">
+    <div className="w-full h-screen max-w-md mx-auto bg-white">
       <HeaderPage />
       <div className="flex flex-col items-center justify-center gap-[20px] p-[20px] h-[80vh] bg-white">
         <div className="avatar_title flex flex-col items-center justify-center gap-[14px]">
-          <img src={Img.Avatar || Img.DefaultAvatar} alt="" />
-          <h3>Trung Trần</h3>
+          <img
+            src={user?.photo ? `${configURL}${user.photo}` : Img.DefaultAvatar}
+            alt=""
+          />
+          <h3>{user?.fullName || "Người dùng"}</h3>
         </div>
 
-        <Link to="/profile-edit/:id" className="button_profile">
+        <Link to="/profile-edit" className="button_profile">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -50,8 +96,8 @@ const ProfilePage = () => {
             fill="none"
           >
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M11.7281 21.9137C11.8388 21.9715 11.9627 22.0009 12.0865 22C12.2103 21.999 12.3331 21.9686 12.4449 21.9097L16.0128 20.0025C17.0245 19.4631 17.8168 18.8601 18.435 18.1579C19.779 16.6282 20.5129 14.6758 20.4998 12.6626L20.4575 6.02198C20.4535 5.25711 19.9511 4.57461 19.2082 4.32652L12.5707 2.09956C12.1711 1.96424 11.7331 1.96718 11.3405 2.10643L4.72824 4.41281C3.9893 4.67071 3.496 5.35811 3.50002 6.12397L3.54231 12.7597C3.5554 14.7758 4.31448 16.7194 5.68062 18.2335C6.3048 18.9258 7.10415 19.52 8.12699 20.0505L11.7281 21.9137ZM10.7836 14.1089C10.9326 14.2521 11.1259 14.3227 11.3192 14.3207C11.5125 14.3198 11.7047 14.2472 11.8517 14.1021L15.7508 10.2581C16.0438 9.96882 16.0408 9.50401 15.7448 9.21866C15.4478 8.9333 14.9696 8.93526 14.6766 9.22454L11.3081 12.5449L9.92885 11.2191C9.63186 10.9337 9.15467 10.9367 8.8607 11.226C8.56774 11.5152 8.57076 11.98 8.86775 12.2654L10.7836 14.1089Z"
               fill="#2494F8"
             />
@@ -67,8 +113,8 @@ const ProfilePage = () => {
             fill="none"
           >
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M7.7688 8.71387H16.2312C18.5886 8.71387 20.5 10.5831 20.5 12.8886V17.8254C20.5 20.1309 18.5886 22.0001 16.2312 22.0001H7.7688C5.41136 22.0001 3.5 20.1309 3.5 17.8254V12.8886C3.5 10.5831 5.41136 8.71387 7.7688 8.71387ZM11.9949 17.3295C12.4928 17.3295 12.8891 16.942 12.8891 16.4551V14.249C12.8891 13.772 12.4928 13.3844 11.9949 13.3844C11.5072 13.3844 11.1109 13.772 11.1109 14.249V16.4551C11.1109 16.942 11.5072 17.3295 11.9949 17.3295Z"
               fill="#2494F8"
             />
@@ -79,7 +125,7 @@ const ProfilePage = () => {
           </svg>
           <p>Đổi mật khẩu</p>
         </Link>
-        <button className="button_profile_out" onClick={handleOpen}>
+        <button className="button_profile_out" onClick={handleOpenLogout}>
           Đăng xuất
         </button>
       </div>
@@ -88,9 +134,16 @@ const ProfilePage = () => {
         <ModalNotification
           isOpen={isModalOpen}
           onClose={handleClose}
-          title="Đăng xuất tài khoản?"
-          message="Bạn xác nhận đăng xuất tài khoản?"
-          confirmText="Đăng xuất"
+          onConfirm={handleConfirm} // Gọi handleConfirm khi xác nhận
+          title={
+            modalType === "login" ? "Yêu cầu đăng nhập" : "Đăng xuất tài khoản?"
+          }
+          message={
+            modalType === "login"
+              ? "Bạn cần đăng nhập để truy cập trang này. Bạn có muốn chuyển đến trang đăng nhập không?"
+              : "Bạn xác nhận đăng xuất tài khoản?"
+          }
+          confirmText={modalType === "login" ? "Đồng ý" : "Đăng xuất"}
         />
       )}
     </div>

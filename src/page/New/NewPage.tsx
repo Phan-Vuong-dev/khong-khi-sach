@@ -1,92 +1,54 @@
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "../../store/store";
+import { fetchPosts } from "../../slices/postSlice";
 import HeaderPage from "../../components/HeaderPage";
-import { formatDate } from "../../utils/formatDateUtils";
 import CardNew from "../../components/card/CardNew";
 
 const NewPage = () => {
-  const post = [
-    {
-      id: 1,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đẩy nhận thức về...",
-      date: "2025-01-10T10:00:00",
-      link: "Xem thêm",
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Trung tâm cộng đồng Michigan đã khởi xướng một chiến dịch nhằm nâng cao nhận thức về vấn đề môi trường.",
-    },
-    {
-      id: 2,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đẩy nhận thức về...",
-      date: "2025-01-10T10:00:00",
-      link: "Xem thêm",
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Nỗ lực mới từ trung tâm Michigan tập trung vào giáo dục cộng đồng về tác động của biến đổi khí hậu.",
-    },
-    {
-      id: 3,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đẩy nhận thức về...",
-      date: "2025-01-10T10:00:00",
-      link: "Xem thêm",
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Các hoạt động nâng cao nhận thức sẽ bao gồm hội thảo, sự kiện ngoài trời, và các chiến dịch truyền thông.",
-    },
-    {
-      id: 4,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đẩy nhận thức về...",
-      date: "2025-01-10T10:00:00",
-      link: "Xem thêm",
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Michigan hy vọng các hoạt động này sẽ khuyến khích cộng đồng hành động vì một tương lai bền vững hơn.",
-    },
-    {
-      id: 5,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đẩy nhận thức về...",
-      date: "2025-01-10T10:00:00",
-      link: "Xem thêm",
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Chương trình nhận được sự ủng hộ mạnh mẽ từ các tổ chức phi lợi nhuận và chính quyền địa phương.",
-    },
-    {
-      id: 6,
-      headline:
-        "Tiết lộ điều vô hình: Trung tâm cộng đồng Michigan thúc đầu phân thức về",
-      date: null,
-      link: null,
-      image: "https://watv.org/wp-content/uploads/2020/06/good-weather.jpg",
-      content:
-        "Thông tin chi tiết sẽ được cập nhật trong các sự kiện sắp tới tại trung tâm cộng đồng Michigan.",
-    },
-  ];
+  const dispatch = useDispatch();
+  const { posts, loading, hasMore } = useSelector((state) => state.posts);
+  const [pageIndex, setPageIndex] = useState(1);
+  const pageSize = 2;
+
+  console.log("posts", posts);
+
+  useEffect(() => {
+    dispatch(fetchPosts({ pageIndex, pageSize }));
+  }, [pageIndex]); // Loại bỏ `dispatch` khỏi dependency nếu không cần thiết
+
+  const handleLoadMore = () => {
+    if (hasMore) {
+      setPageIndex((prev) => prev + 1);
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto bg-white w-full">
+    <div className="w-full max-w-md mx-auto bg-white">
       <HeaderPage />
       <div className="min-h-screen pt-[128px] pb-[70px]">
         <div className="flex flex-col gap-[20px] py-[20px]">
-          {post.map((item, index) => {
-            const postDate = item.date ? new Date(item.date) : null;
-            return (
-              <CardNew
-                key={index}
-                indexPost={index}
-                imgPost={item.image}
-                titlePost={item.headline}
-                timeDate={
-                  postDate ? formatDate(postDate) : "Ngày không xác định"
-                }
-                idPost={item.id}
-              />
-            );
-          })}
+          {posts?.map((item, index) => (
+            <CardNew
+              key={index}
+              indexPost={index}
+              imgPost={item.photo}
+              titlePost={item.name}
+              timeDate={item.date || "Ngày không xác định"}
+              idPost={item.id}
+            />
+          ))}
         </div>
+        {hasMore && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleLoadMore}
+              disabled={loading}
+              className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            >
+              {loading ? "Đang tải..." : "Xem thêm"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

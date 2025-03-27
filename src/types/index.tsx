@@ -8,6 +8,7 @@ export interface ModalNotification {
   title?: string;
   message?: string;
   confirmText?: string;
+  onConfirm: () => void;
 }
 
 export interface CardNewProps {
@@ -28,81 +29,40 @@ export interface PostDetail {
 }
 
 // auth types
-export interface LoginRequest {
-  Username: string;
-  Password: string;
-}
-
-export interface UserProfile {
+export interface Profile {
   id: number;
   roleId: number;
-  roleName: string | null;
-  roleColor: string | null;
   fullName: string;
   photo: string;
   username: string;
   email: string;
-  warehouseId: number | null;
-  displayName: string | null;
-}
-
-export interface LoginResponse {
-  status: string;
-  message: string;
-  value: any;
-  data: any;
-  resources: {
-    accessToken: string;
-    profile: UserProfile;
-  };
-  title: string | null;
-  errors: any | null;
 }
 
 export interface AuthState {
-  user: UserProfile | null;
-  token: string | null;
-  isAuthenticated: boolean;
+  user: Profile | null;
+  accessToken: string | null;
   loading: boolean;
   error: string | null;
 }
 
-export interface RegisterRequest {
-  fullName: string;
-  addressDetail: string;
-  dob: string;
-  email: string;
-  username: string;
-  password: string;
-  photo: string;
-  phone: string;
+export interface RegisterData {
+  FullName: string;
+  AddressDetail: string;
+  Dob: string;
+  Email: string;
+  Username: string;
+  Password: string;
+  Photo: string;
+  Phone: string;
 }
 
-export interface RegisterRequest {
-  fullName: string;
-  addressDetail: string;
-  dob: string;
-  email: string;
-  username: string;
-  password: string;
-  photo: string;
-  phone: string;
-}
-
-export interface RegisterResponse {
-  status: string;
-  message: string;
-  data: Array<{
-    id: number;
-    username: string;
-    fullName: string;
-    email: string;
-    phone: string;
-    photo: string;
-    doB: string;
-    addressDetail: string;
-    active: boolean;
-    roleId: number;
-    createdTime: string;
-  }>;
+export interface LoginCredentials {
+  FullName: string;
+  AddressDetail: string;
+  Dob: string;
+  Email: string;
+  Username: string;
+  Password: string;
+  Photo: string;
+  Phone: string;
 }

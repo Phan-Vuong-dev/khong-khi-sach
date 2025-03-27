@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CardNewProps } from "../../types";
+import { configURL } from "../../services/configAPI";
 
 const CardNew: React.FC<CardNewProps> = ({
   indexPost,
@@ -9,9 +10,9 @@ const CardNew: React.FC<CardNewProps> = ({
   idPost,
 }) => {
   return (
-    <div className="card_new flex flex-row gap-2" key={indexPost}>
-      <div className="img w-full">
-        <img src={imgPost} alt={titlePost} />
+    <div className="flex flex-row gap-2 card_new" key={indexPost}>
+      <div className="w-full img">
+        <img src={`${configURL}${imgPost}`} alt={titlePost} />
       </div>
       <div className="content">
         <h2>{titlePost}</h2>

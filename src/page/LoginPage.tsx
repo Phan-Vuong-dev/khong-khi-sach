@@ -1,9 +1,11 @@
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import Img from "../assets/img";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { loginUser } from "../store/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { login } from "../slices/authSlice";
+import { toast } from "react-toastify"; // Import toast
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,9 +16,17 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
 
   // Redux state and actions
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const { accessToken, loading, error } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  useEffect(() => {
+    if (accessToken) {
+      navigate("/"); // Redirect to the dashboard or any other page
+    }
+  }, [accessToken, navigate]);
 
   const togglePasswordVisibility = () => {
     setPasswordType((prevType: "password" | "text") =>
@@ -27,26 +37,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    try {
-      // Transform email to username format if needed
-      const username = email; // Modify this if you need to extract username from email
-
-      // Dispatch login action
-      const resultAction = await dispatch(
-        loginUser({
-          Username: username,
-          Password: password,
-        })
-      ).unwrap();
-
-      // If login is successful, navigate to dashboard or home page
-      if (resultAction) {
-        navigate("/");
-      }
-    } catch (err) {
-      // Error is handled by the redux slice
-      console.error("Login failed:", err);
+    const resultAction = await dispatch(
+      login({ Username: email, Password: password })
+    );
+    if (login.fulfilled.match(resultAction)) {
+      toast.success("Đăng nhập thành công!");
+      navigate("/"); // Redirect to the dashboard or any other page
+    } else {
+      toast.error("Đăng nhập thất bại!");
     }
   };
 
@@ -64,7 +62,10 @@ const LoginPage = () => {
   return (
     <div className="px-[20px] py-[62px] flex flex-col items-center justify-between h-screen max-w-md mx-auto bg-white">
       <div className="w-full flex flex-col items-center gap-[24px]">
-        <img src={Img.LogoMax} alt="" className="w-[226px]" />
+        <Link to="/">
+          <img src={Img.LogoMax} alt="" className="w-[226px]" />
+        </Link>
+
         <form
           onSubmit={handleSubmit}
           className="relative z-0 w-full flex flex-col gap-[24px]"
@@ -121,17 +122,16 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {error && <div className="text-sm text-red-500">{error}</div>}
-
           <div className="flex items-center justify-center w-full">
             <button
               type="submit"
-              disabled={loading}
               className="flex items-center justify-center w-full button-login"
+              disabled={loading}
             >
-              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              Đăng nhập
             </button>
           </div>
+          {error && <p className="text-red-600">{error}</p>}
         </form>
         <Link
           to="/forgot-password"

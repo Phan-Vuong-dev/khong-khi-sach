@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import HeaderDetailPage from "../components/HeaderDetailPage";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { register } from "../slices/authSlice";
+import { toast } from "react-toastify"; // Import toast
+import { RegisterData } from "../types";
 
 const PasswordInput = ({
   id,
@@ -64,6 +69,10 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [message, setMessage] = useState<string | null>(null);
 
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => {
@@ -93,26 +102,38 @@ const RegisterPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    const currentDate = new Date().toISOString();
+
+    const apiBody: RegisterData = {
+      FullName: formData.nameAccount,
+      AddressDetail: formData.address,
+      Dob: currentDate,
+      Email: formData.email,
+      Username: formData.email,
+      Password: formData.password,
+      Photo:
+        "http://tuthienthat.vn/wp-content/uploads/2025/03/avatar-default.jpg",
+      Phone: formData.phoneNumber,
+    };
+
     try {
-      const response = await fetch("https://api.example.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error("Đăng ký thất bại. Vui lòng thử lại.");
-
-      setMessage("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
-      setFormData({
-        nameAccount: "",
-        email: "",
-        phoneNumber: "",
-        address: "",
-        password: "",
-        confirmPassword: "",
-      });
+      const resultAction = await dispatch(register(apiBody));
+      if (register.fulfilled.match(resultAction)) {
+        toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
+        setFormData({
+          nameAccount: "",
+          email: "",
+          phoneNumber: "",
+          address: "",
+          password: "",
+          confirmPassword: "",
+        });
+        navigate("/login");
+      } else {
+        toast.error("Đăng ký thất bại. Vui lòng thử lại.");
+      }
     } catch (error) {
-      setMessage("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
     }
   };
 
@@ -223,6 +244,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               className="w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+              disabled={loading}
             >
               Đăng ký
             </button>
