@@ -15,6 +15,8 @@ import FilesPage from "../page/file/FilesPage";
 import PolicyTerms from "../page/PolicyTerms";
 import NewDetailPage from "../page/New/NewDetailPage";
 import ReconfirmPassword from "../page/profile/ReconfirmPassword";
+import NotificationDetailsPage from "../page/notification/NotificationDetailsPage";
+import NotificationPage from "./../page/notification/NotificationPage";
 
 const RoutePage = () => {
   return (
@@ -28,6 +30,11 @@ const RoutePage = () => {
           <Route path="files" element={<FilesPage />} />
           <Route path="news" element={<NewPage />} />
           <Route path="profiles" element={<ProfilePage />} />
+          <Route path="notification" element={<NotificationPage />} />
+          <Route
+            path="notification/:id"
+            element={<NotificationDetailsPage />}
+          />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

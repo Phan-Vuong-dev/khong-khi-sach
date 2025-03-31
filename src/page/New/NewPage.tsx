@@ -14,7 +14,7 @@ const NewPage = () => {
 
   useEffect(() => {
     dispatch(fetchPosts({ pageIndex, pageSize }));
-  }, [pageIndex]); // Loại bỏ `dispatch` khỏi dependency nếu không cần thiết
+  }, [pageIndex]);
 
   const handleLoadMore = () => {
     if (hasMore) {

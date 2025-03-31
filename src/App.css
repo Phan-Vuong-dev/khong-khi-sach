@@ -490,6 +490,12 @@ p.content {
   height: 6px;
   background: #b27f2c;
 }
+
+.content-post-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 /* new_end  */
 
 /* home page */
@@ -643,3 +649,64 @@ p.content {
 }
 
 /* home page end */
+
+/* NotificationPage */
+
+.bg-gradient-tick {
+  border-radius: 79.2px;
+  background: linear-gradient(
+    135deg,
+    rgba(38, 156, 255, 0.1) 0%,
+    rgba(16, 69, 178, 0.1) 100%
+  );
+}
+
+.bg-notification-tick {
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(38, 156, 255, 0.1) 0%,
+    rgba(16, 69, 178, 0.1) 100%
+  );
+}
+
+.bg-notification {
+  border-bottom: 1px solid var(--Border, #d9d9d9);
+}
+
+.bg-notification-active {
+  border-bottom: 1px solid var(--Border, #d9d9d9);
+  background: rgba(36, 148, 248, 0.1);
+}
+
+.title_notification {
+  color: #000;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: -0.5px;
+
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3em;                                                                                                         
+  line-height: 1.5em;
+  text-overflow: ellipsis;
+}
+
+.time_notification {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  color: var(--Black, #000);
+  text-overflow: ellipsis;
+  font-family: Quicksand;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
